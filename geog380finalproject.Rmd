@@ -1,0 +1,424 @@
+---
+Course: "Spatial Fundamental Methods in R: GEOG 380R"
+Professor: Dr. Haller
+Group Members: Catharine Carfagno, Anna Nguyen, Lulia Aklilu
+---
+
+```{r}
+#Loading in files and packages
+library(readr)
+Opiod_use<- read.csv("NSDUH13.edited.csv-2021.csv")
+Opiod_misuse<- read.csv("NSDUH23-2021.csv")
+Marijuana_use<-read.csv("NSDUH2-2021.csv")
+Any_Mh<-read.csv("NSDUH29-2021.csv")
+Serious_Mh<-read.csv("NSDUH30-2021.csv")
+Depressive<-read.csv("NSDUH32-2021.csv")
+Opiod_use_regions<- read.csv("NSDUH13.regions-2021.csv")
+Opiod_use_states<- read.csv("NSDUH13.states-2021.csv")
+Opiod_use_rs<- read.csv("NSDUH13.statesbyregion-2021.csv")
+Any_Mh_region <- read.csv("NSDUH29.region-2021.csv")
+Any_Mh_rs<- read.csv("NSDUH29.statebyregion-2021.csv")
+Opiod_misuse_rs<- read.csv("NSDUH23.statex-2021.csv")
+Serious_Mh_rs<-read.csv("NSDUH30.statex-2021.csv")
+
+install.packages("devtools")
+devtools::install_github("UrbanInstitute/urbnmapr")
+install.packages("MetBrewer")
+devtools::install_github("BlakeRMills/MetBrewer")
+
+library(dplyr)
+library(ggplot2)
+library(ggspatial)
+library(tidyr)
+library(kableExtra)
+library(corrplot)
+library(devtools)
+library(urbnmapr)
+library(sf)
+library(spData)
+library(transformr)
+library(leaflet)
+library(ggmap)
+library(ggthemes)
+library(spdep)
+library(magrittr)
+
+install.packages("MetBrewer")
+install.packages("devtools")
+library(MetBrewer)
+#palette <- met.brewer('Degas',4)
+palette <- c('#438924', '#e26d5c', '#93511e', '#f1c232')
+
+```
+
+
+```{r}
+########## COMBINE TABLES ###########
+#first set is opiod, second set is serious mental health
+Opiod_Serious <- Opiod_use %>% 
+  left_join(Serious_Mh,
+    by = ("Order"))
+#first set is opiod, second set is any mental health
+Opiod_Any <- Opiod_use %>%
+  left_join(Any_Mh,
+    by = ("Order"))
+#First set is opiod misuse, second set is serious mental health
+Opiodmis_Serious <- Opiod_misuse %>%
+  left_join(Serious_Mh,
+    by = ("Order"))
+#First set is opiod misuse, second set is any mental health
+Opiodmis_Any <- Opiod_misuse %>%
+  left_join(Any_Mh,
+    by = ("Order"))
+#First set is opiod use, second set is depressive symptoms
+Opiod_Depr <- Opiod_use %>%
+  left_join(Depressive,
+    by = ("Order"))
+#First set is opiod misuse, second set is depressive symptoms
+Opiodmis_Depr <- Opiod_use %>%
+  left_join(Depressive,
+    by = ("Order"))
+
+regions_by_order <- Opiod_use_rs %>% select(Order, Region)
+
+Marijuana_Serious <- Marijuana_use %>%
+  left_join(Serious_Mh,
+    by = ("Order"))
+
+Marijuana_Serious <- Marijuana_Serious[-(1:5),]
+
+Marijuana_Serious <- Marijuana_Serious %>%
+  left_join(regions_by_order,
+    by = ("Order"))
+
+Marijuana_Any<- Marijuana_use %>% 
+  left_join(Any_Mh,
+  by=("Order"))
+
+Marijuana_Any <- Marijuana_Any[-(1:5),]
+
+Marijuana_Any <- Marijuana_Any %>%
+  left_join(regions_by_order,
+    by = ("Order"))
+
+Opiod_Any_region<-Opiod_use_regions %>% 
+  left_join(Any_Mh_region,
+  by=("Order"))
+Opiod_Any_rs<- Opiod_use_rs %>% left_join(Any_Mh_rs,
+  by=("Order"))
+
+Opiodmis_serious_rs<-Opiod_misuse_rs %>% 
+  left_join(Serious_Mh_rs,
+  by=("State.x"))
+
+Opiod_Serious$X18..Estimate.x<-gsub("%$","",Opiod_Serious$X18..Estimate.x)
+Opiod_Serious$X18..Estimate.y<-gsub("%$","",Opiod_Serious$X18..Estimate.y)
+Opiod_Any$X18..Estimate.x<-gsub("%$","",Opiod_Any$X18..Estimate.x)
+Opiod_Any$X18..Estimate.y<-gsub("%$","",Opiod_Any$X18..Estimate.y)
+Opiodmis_Serious$X18..Estimate.x<-gsub("%$","",Opiodmis_Serious$X18..Estimate.x)
+Opiodmis_Serious$X18..Estimate.y<-gsub("%$","",Opiodmis_Serious$X18..Estimate.y)
+Opiodmis_Any$X18..Estimate.x<-gsub("%$","",Opiodmis_Any$X18..Estimate.x)
+Opiodmis_Any$X18..Estimate.y<-gsub("%$","",Opiodmis_Any$X18..Estimate.y)
+Opiod_Depr$X18..Estimate.x<-gsub("%$","",Opiod_Depr$X18..Estimate.x)
+Opiod_Depr$X18..Estimate.y<-gsub("%$","",Opiod_Depr$X18..Estimate.y)
+Opiodmis_Depr$X18..Estimate.x<-gsub("%$","",Opiodmis_Depr$X18..Estimate.x)
+Opiodmis_Depr$X18..Estimate.y<-gsub("%$","",Opiodmis_Depr$X18..Estimate.y)
+Marijuana_Serious$X18..Estimate.x<-gsub("%$","",Marijuana_Serious$X18..Estimate.x)
+Marijuana_Serious$X18..Estimate.y<-gsub("%$","",Marijuana_Serious$X18..Estimate.y)
+Marijuana_Any$X18..Estimate.x<-gsub("%$","",Marijuana_Any$X18..Estimate.x)
+Marijuana_Any$X18..Estimate.y<-gsub("%$","",Marijuana_Any$X18..Estimate.y)
+Opiod_Any_rs$X18..Estimate.x<-gsub("%$","",Opiod_Any_rs$X18..Estimate.x)
+Opiod_Any_rs$X18..Estimate.y<-gsub("%$","",Opiod_Any_rs$X18..Estimate.y)
+Opiodmis_serious_rs$X18..Estimate.y<-gsub("%$","",Opiodmis_serious_rs$X18..Estimate.y)
+Opiodmis_serious_rs$X18..Estimate.x<-gsub("%$","",Opiodmis_serious_rs$X18..Estimate.x)
+###remove percent symbols### for rs opiod_any
+###Export merged files edit and reload###
+###Making everything numeric
+Opiod_Any_rs <- Opiod_Any_rs %>% mutate(X18..Estimate.x = as.numeric(X18..Estimate.x), X18..Estimate.y = as.numeric(X18..Estimate.y))
+Opiodmis_serious_rs <- Opiodmis_serious_rs %>% mutate(X18..Estimate.x = as.numeric(X18..Estimate.x), X18..Estimate.y = as.numeric(X18..Estimate.y))
+```
+
+
+```{r}
+########### Checking correlations #########
+summary(lm(formula =X18..Estimate.x ~ X18..Estimate.y,
+        data = Opiod_Serious,na.rm=TRUE))
+###Shows that having a serious mental illness significantly contributes** to opiod use
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Opiod_Serious,na.rm=TRUE))
+##Shows that opiod use contributes *** (9.36e-05) to serious mental illness
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Opiod_Any,na.rm=TRUE))
+###Shows that opiod use contributes*** (4.29e-06) to any mental illness
+summary(lm(formula =X18..Estimate.x ~ X18..Estimate.y,
+        data = Opiodmis_Serious,na.rm=TRUE))
+##Shows that serious mental illness contributes *0.032 to opiod misuse
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Opiod_Serious,na.rm=TRUE))
+###Shows that opiod misuse contributes *** (9.36e-05) to serious mental illness
+summary(lm(formula =X18..Estimate.x ~ X18..Estimate.y,
+        data = Opiodmis_Any,na.rm=TRUE))
+###shows that any mental illness does not contribute to opiod misuse
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Opiodmis_Any,na.rm=TRUE))
+###Shows that opiod misuse contributes *** (1.43 e-05) to any mental illness
+summary(lm(formula =X18..Estimate.x ~ X18..Estimate.y,
+        data = Opiod_Depr,na.rm=TRUE))
+##Shows that depression does not influence opiod use
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Opiod_Depr,na.rm=TRUE))
+###shows that opiod use significantly influences *** (1.8e-05) depression
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Opiodmis_Depr,na.rm=TRUE))
+###Shows that opiod misuse significantly influences ***(1.8e-05) depression
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Marijuana_Serious,na.rm=TRUE))
+##Shows that marijuana has no impact on serious mental health issues
+summary(lm(formula =X18..Estimate.y ~ X18..Estimate.x,
+        data = Marijuana_Any,na.rm=TRUE))
+##Shows that marijuana use influences * 0.0104 on any mental health issue
+summary(lm(formula =X18..Estimate.x ~ X18..Estimate.y,
+        data = Marijuana_Any,na.rm=TRUE))
+##Shows that having any mental health issue could influence marijuana use
+```
+
+
+```{r}
+####### First graph: Opioid use contributing to any mental illness by region #########
+####Make numeric####
+ggplot(Opiod_Any_rs,aes(x = X18..Estimate.x, y = X18..Estimate.y))+
+ geom_smooth(size=1.5, color= "black")+
+  geom_point(aes(group=Region.x, color = Region.x), size = 2)+
+  labs(color = "Region", y = "Population with any Mental Illness (%)", x = "Population of Opioid Users (%)",
+       title = "Opioid Use Compared to Mental Illness by Region") + 
+    scale_color_manual(values = palette)+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5, color = '#4c2608', face = "bold"), 
+        axis.title.x = element_text(color = "#4c2608", face = "bold"),
+          axis.title.y = element_text(color = "#4c2608", face = "bold"), 
+        legend.title = element_text(color = "#4c2608", face = "bold"), 
+        panel.grid.major = element_line(color = 'gray85'),
+        panel.grid.minor = element_line(color = 'gray85'))
+
+```
+
+
+```{r}
+######## Second graph: Marijuana use contributing to any mental illness by region ########
+
+ggplot(Marijuana_Any, aes(
+  x = as.numeric(X18..Estimate.x),
+  y = as.numeric(X18..Estimate.y)
+)) +
+  geom_smooth(size = 1.5, color = "#4c2608") +
+  geom_point(aes(group = Region, color = Region), size = 2) +
+  labs(
+    color = "Region",
+    y = "Population with any Mental Illness (%)",
+    x = "Population of Marijuana Users (%)",
+    title = "Marijuana Use Compared to Mental Illness by Region"
+  ) +     scale_color_manual(values = palette) + theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, color = '#4c2608', face = "bold"), 
+        axis.title.x = element_text(color = "#4c2608", face = "bold"),
+          axis.title.y = element_text(color = "#4c2608", face = "bold"), 
+        legend.title = element_text(color = "#4c2608", face = "bold"), 
+        panel.grid.major = element_line(color = 'gray85'),
+        panel.grid.minor = element_line(color = 'gray85'))
+```
+
+
+```{r}
+########## Map of opioid use and mental health across US ########
+states_sf <- get_urbn_map("states", sf = TRUE) 
+states_sf<- states_sf %>% 
+  st_transform("EPSG:4267")
+colnames(states_sf)<-c("state_fips", "state_abv", "State.x", "geometry")
+Opiod_Any_rs_map <- states_sf  %>%
+  left_join(Opiod_Any_rs,
+    by = ("State.x"))
+popupOP <- paste0("<strong>% of pop: </strong>", Opiod_Any_rs_map$X18..Estimate.x)
+popupMH <- paste0("<strong>% of pop: </strong>", Opiod_Any_rs_map$X18..Estimate.y)
+
+pal_funOP <- colorNumeric("YlOrBr", NULL, n = 5)
+pal_funMH <- colorNumeric("Greens", NULL, n = 3)
+
+leaflet() %>%
+  leaflet::addPolygons(data = Opiod_Any_rs_map, 
+                       stroke = FALSE, 
+                       fillColor = ~pal_funOP(X18..Estimate.x), 
+                       fillOpacity = 1, 
+                       smoothFactor = 0.5, 
+                       popup = popupOP,
+                       group = "Opioid Use in Adults") %>% 
+  leaflet::addPolygons(data = Opiod_Any_rs_map, 
+                       stroke = FALSE, 
+                       fillColor = ~pal_funMH(X18..Estimate.y), 
+                       fillOpacity = 1, 
+                       smoothFactor = 0.5, 
+                       popup = popupMH,
+                       group = "Adults with Any Mental Illnesses") %>% 
+  addLegend("bottomright",  
+            pal=pal_funOP,    
+            values=Opiod_Any_rs_map$X18..Estimate.y, 
+            title = 'Opioid Use in Adults (%)',
+            group = "Opioid Use in Adults (%)") %>% 
+  addLegend("bottomleft",  
+            pal=pal_funMH,    
+            values=Opiod_Any_rs_map$X18..Estimate.x, 
+            title = 'Adults with Any Mental Illnesses (%)',
+            group = "Adults with Any Mental Illnesses (%)") %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addLayersControl(overlayGroups = c("Opioid Use in Adults", "Adults with Any Mental Illnesses"),
+                   options = layersControlOptions(collapsed = T))
+
+```
+
+
+
+```{r}
+########## Map of opiod misuse and serious mental health issues #######
+Opiodmis_Serious_rs_map <- states_sf %>%
+  left_join(Opiodmis_serious_rs,
+    by = ("State.x"))
+popupOP2 <- paste0("<strong>% of pop: </strong>", Opiodmis_Serious_rs_map$X18..Estimate.x)
+popupMH2 <- paste0("<strong>% of pop: </strong>", Opiodmis_Serious_rs_map$X18..Estimate.y)
+
+pal_funOP <- colorNumeric("YlOrBr", NULL, n = 5)
+pal_funMH <- colorNumeric("Greens", NULL, n = 3)
+
+leaflet() %>%
+  leaflet::addPolygons(data = Opiodmis_Serious_rs_map,
+                       stroke = FALSE,
+                       fillColor = ~pal_funOP(X18..Estimate.x), 
+                       fillOpacity = 1, 
+                       smoothFactor = 0.5, 
+                       popup = popupOP2,
+                       group = "Opiod Misuse in Adults") %>% 
+leaflet::addPolygons(data = Opiodmis_Serious_rs_map, 
+                       stroke = FALSE, 
+                       fillColor = ~pal_funMH(X18..Estimate.y), 
+                       fillOpacity = 1, 
+                       smoothFactor = 0.5, 
+                       popup = popupMH2,
+                       group = "Adults with Serious Mental Illnesses") %>% 
+  addLegend("bottomleft",  
+            pal=pal_funMH,    
+            values=Opiodmis_Serious_rs_map$X18..Estimate.y, 
+            title = 'Adults with Serious Mental Illnesses (%)') %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addLayersControl(overlayGroups = c("Opiod Misuse in Adults", "Adults with Serious Mental Illnesses"),
+                   options = layersControlOptions(collapsed = T)) %>% 
+    addLegend("bottomright",
+            pal=pal_funOP,
+            values=Opiodmis_Serious_rs_map$X18..Estimate.x, 
+            title = 'Opiod Misuse in Adults (%)')
+
+```
+```{r}
+#####Map of opioid use by region and state###
+Opiod_use_rs<- read.csv("NSDUH13.statesbyregion-2021.csv")
+Opiod_use_rs$X18..Estimate<-gsub("%$","",Opiod_use_rs$X18..Estimate)
+Opiod_use_rs <- Opiod_use_rs %>%
+  select(c(State,Region,X18..Estimate))
+colnames(Opiod_use_rs)<-c("State", "Region", "StateX18..Estimate")
+Opiod_use_rs <- Opiod_use_rs %>%
+  mutate(RegionX18..Estimate = case_when(
+    Region == "South" ~ "3.55",
+    Region == "West" ~ "3.38",
+    Region == "North East" ~ "3.48",
+    Region == "Midwest" ~ "3.29",
+    TRUE ~ Region))
+states_opiod_use <- get_urbn_map("states", sf = TRUE) 
+states_opiod_use<- states_opiod_use %>% 
+  st_transform("EPSG:4267")
+colnames(states_opiod_use)<-c("state_fips", "state_abv", "State", "geometry")
+states_opiod_use <- states_opiod_use%>%
+  left_join(Opiod_use_rs,
+    by = ("State"))
+states_opiod_use <- states_opiod_use %>% mutate(StateX18..Estimate = as.numeric(StateX18..Estimate), RegionX18..Estimate = as.numeric(RegionX18..Estimate))
+regions_opiod_use<-states_opiod_use %>% group_by(RegionX18..Estimate)
+
+p_popupST <- paste0("<strong> % of Pop : </strong>", states_opiod_use$StateX18..Estimate)
+p_popupREG <- paste0("<strong> % of Pop: </strong>", states_opiod_use$RegionX18..Estimate)
+
+pal_funST <- colorNumeric("YlOrBr", NULL, n = 5)
+pal_funREG <- colorNumeric("Greens", NULL, n = 5)
+leaflet() %>%
+  leaflet::addPolygons(data = states_opiod_use, 
+                       stroke = FALSE, 
+                       fillColor = ~pal_funST(StateX18..Estimate), 
+                       fillOpacity = 1, 
+                       smoothFactor = 0.5, 
+                       popup = p_popupST,
+                       group = "Opioid Use by State") %>% 
+  leaflet::addPolygons(data = regions_opiod_use, 
+                       stroke = FALSE, 
+                       fillColor = ~pal_funREG(RegionX18..Estimate), 
+                       fillOpacity = 1, 
+                       smoothFactor = 0.5, 
+                       popup = p_popupREG,
+                       group = "Opioid Use by Region") %>% 
+  addLegend("bottomright",  
+            pal=pal_funST,    
+            values=states_opiod_use$StateX18..Estimate, 
+            title = 'Opioid Use by State (%)',
+            group = "Opioid Use by State") %>% 
+   addLegend("bottomleft",  
+            pal=pal_funREG,    
+            values=states_opiod_use$RegionX18..Estimate, 
+            title = 'Opioid Use by Region (%)',
+            group = "Opioid Use by Region") %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addLayersControl(overlayGroups = c("Opioid Use by Region", "Opioid Use by State"),
+                   options = layersControlOptions(collapsed = T))
+```
+
+
+```{r}
+######### Spatial Autocorrelation for opioid misuse ##########
+misuse_list <- Opiodmis_Serious_rs_map %>% 
+  poly2nb(c('cartodb_id')) %>% 
+  nb2listw(zero.policy = TRUE) 
+Opiodmis_Serious_rs_map
+misuse_list %>% 
+  moran.test(Opiodmis_Serious_rs_map$X18..Estimate.x, ., zero.policy = TRUE)
+moran.plot(Opiodmis_Serious_rs_map$X18..Estimate.x, 
+           misuse_list, 
+           zero.policy = TRUE, 
+           xlab = 'Percentage of Population Misusing Opioids',
+           ylab = 'Lagged Misuse of Opioids (of Neighbors)',
+                   pch=20)
+lisaRslt <- localmoran(Opiodmis_Serious_rs_map$X18..Estimate.x, misuse_list, 
+            zero.policy = TRUE, na.action = na.omit)
+significanceLevel <- 0.05;
+meanVal <- mean(Opiodmis_Serious_rs_map$X18..Estimate.x);
+
+lisaRslt %<>% as_tibble() %>%
+  set_colnames(c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")) %>%
+  mutate(coType = case_when(
+  `Pr(z > 0)` > 0.05 ~ "Insignificant",
+  `Pr(z > 0)` <= 0.05 & Ii >= 0 & Opiodmis_Serious_rs_map$X18..Estimate.x >= meanVal ~ "HH",
+  `Pr(z > 0)` <= 0.05 & Ii >= 0 & Opiodmis_Serious_rs_map$X18..Estimate.x < meanVal ~ "LL",
+  `Pr(z > 0)` <= 0.05 & Ii < 0 & Opiodmis_Serious_rs_map$X18..Estimate.x >= meanVal ~ "HL",
+  `Pr(z > 0)` <= 0.05 & Ii < 0 & Opiodmis_Serious_rs_map$X18..Estimate.x < meanVal ~ "LH"))
+
+# Now add this coType to original sf data
+Opiodmis_Serious_rs_map$coType <- lisaRslt$coType %>% replace_na("Insignificant")
+Opiodmis_Serious_rs_map<- Opiodmis_Serious_rs_map %>% 
+  st_transform("EPSG:4267")
+
+#Now we'll plot it!
+ggplot(Opiodmis_Serious_rs_map) +
+  geom_sf(aes(fill=coType),color = 'lightgrey') +
+  scale_fill_manual(values = c('brown4','gray95','orange'), name='Clusters & \n  Outliers') +
+  labs(title = "Clustering Opioid Misuse by State")+
+  theme_calc()
+```
+
+###Meth: Tables 11
+
+###Opiods: Tables 13 and use disroder is tables 23
+
+###any mental health: 29, serious mental health: 30
+
+###tables 32 major depressive episode in the past year

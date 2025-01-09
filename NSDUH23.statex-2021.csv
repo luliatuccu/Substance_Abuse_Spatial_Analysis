@@ -1,0 +1,52 @@
+Order,State.x,Region,12+ Estimate,12-17 Estimate,18+ Estimate,18-25 Estimate,26+ Estimate
+6,Alabama,South,3.20%,1.14%,3.42%,1.87%,3.65%
+7,Alaska,West,2.10%,0.93%,2.23%,0.94%,2.42%
+8,Arizona,West,2.00%,1.43%,2.06%,1.48%,2.15%
+9,Arkansas,South,2.42%,1.01%,2.58%,1.38%,2.77%
+10,California,West,1.58%,1.17%,1.62%,1.50%,1.64%
+11,Colorado,West,1.53%,0.95%,1.59%,1.10%,1.66%
+12,Connecticut,North East,1.60%,0.90%,1.67%,1.10%,1.75%
+13,Delaware,South,1.96%,1.20%,2.03%,1.92%,2.05%
+14,District of Columbia,North East,1.68%,0.70%,1.75%,1.28%,1.82%
+15,Florida,South,1.90%,1.00%,1.98%,1.37%,2.06%
+16,Georgia,South,1.90%,1.04%,2.00%,1.39%,2.09%
+17,Hawaii,West,1.12%,0.91%,1.14%,1.60%,1.08%
+18,Idaho,West,1.86%,0.86%,1.98%,1.15%,2.12%
+19,Illinois,Midwest,2.07%,1.14%,2.16%,1.20%,2.31%
+20,Indiana,Midwest,1.90%,0.95%,2.00%,1.26%,2.13%
+21,Iowa,Midwest,1.90%,0.96%,2.00%,0.90%,2.18%
+22,Kansas,Midwest,2.23%,1.05%,2.36%,1.08%,2.58%
+23,Kentucky,South,3.38%,0.94%,3.64%,1.33%,4.00%
+24,Louisiana,South,2.99%,1.10%,3.20%,1.44%,3.46%
+25,Maine,North East,2.08%,0.70%,2.20%,0.97%,2.35%
+26,Maryland,South,1.98%,1.20%,2.05%,1.19%,2.18%
+27,Massachusetts,North East,1.58%,0.73%,1.66%,1.15%,1.74%
+28,Michigan,Midwest,2.02%,0.85%,2.14%,1.29%,2.27%
+29,Minnesota,Midwest,1.50%,1.02%,1.55%,0.83%,1.66%
+30,Mississippi,South,2.99%,1.05%,3.21%,1.63%,3.46%
+31,Missouri,Midwest,1.98%,0.98%,2.09%,1.11%,2.24%
+32,Montana,West,2.17%,0.81%,2.30%,1.18%,2.47%
+33,Nebraska,Midwest,1.99%,0.89%,2.11%,0.90%,2.32%
+34,Nevada,West,1.97%,1.45%,2.03%,1.58%,2.09%
+35,New Hampshire,North East,1.34%,0.73%,1.40%,0.99%,1.46%
+36,New Jersey,North East,1.30%,0.98%,1.33%,1.44%,1.32%
+37,New Mexico,West,2.88%,1.19%,3.07%,1.61%,3.29%
+38,New York,North East,1.68%,0.91%,1.75%,1.23%,1.83%
+39,North Carolina,South,2.48%,1.03%,2.63%,1.40%,2.81%
+40,North Dakota,Midwest,1.61%,0.91%,1.68%,0.77%,1.85%
+41,Ohio,Midwest,2.33%,0.95%,2.48%,1.07%,2.69%
+42,Oklahoma,South,3.00%,1.05%,3.22%,1.44%,3.51%
+43,Oregon,West,1.90%,1.01%,1.99%,1.06%,2.12%
+44,Pennsylvania,North East,2.39%,0.96%,2.53%,1.26%,2.71%
+45,Rhode Island,North East,2.10%,0.79%,2.22%,1.28%,2.37%
+46,South Carolina,South,2.15%,1.04%,2.26%,1.20%,2.42%
+47,South Dakota,Midwest,1.98%,0.83%,2.11%,0.80%,2.32%
+48,Tennessee,South,2.40%,0.87%,2.55%,1.29%,2.74%
+49,Texas,South,1.91%,0.88%,2.03%,1.49%,2.12%
+50,Utah,West,1.57%,0.43%,1.73%,1.26%,1.82%
+51,Vermont,North East,2.07%,0.74%,2.18%,0.86%,2.39%
+52,Virginia,South,1.76%,0.87%,1.84%,1.07%,1.96%
+53,Washington,West,2.03%,0.99%,2.13%,1.48%,2.22%
+54,West Virginia,South,3.23%,0.73%,3.46%,1.23%,3.78%
+55,Wisconsin,Midwest,2.09%,0.98%,2.20%,0.91%,2.40%
+56,Wyoming,West,1.56%,0.94%,1.63%,0.92%,1.73%
